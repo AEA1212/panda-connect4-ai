@@ -1,0 +1,27 @@
+[project]
+name = "panda-connect4-ai"
+version = "0.1.0"
+description = "Connect Four with the Franka Panda (RAI robotic)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "robotic==0.4.3a3",
+    "numpy",
+    "matplotlib",
+    "opencv-contrib-python",
+    "pyrealsense2",
+    "pyyaml==6.0.3",
+    "pytest>=9.2.0",
+]
+
+[project.optional-dependencies]
+# Only needed for the YOLOE object detection path in 02/tutorial_2.py (pulls in torch)
+yolo = ["ultralytics"]
+
+[tool.uv]
+# Scripts only, nothing to build or install as a package
+package = false
+
+[dependency-groups]
+# Tutor scripts (scripts/utils.py)
+dev = ["pandas"]

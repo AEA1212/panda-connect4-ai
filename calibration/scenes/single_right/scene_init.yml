@@ -1,0 +1,9 @@
+Include: <station.yml>
+
+Include: <cams_intrinsics.yml>
+Include: <init/cams.yml>
+Include: <init/arucos.yml>
+Include: <init/joints.yml>
+
+## Connect Four: board and disc holders on the table, 2 x 27 discs
+Include: <connect4.g>
