@@ -18,7 +18,7 @@ Test_L1_R2 = DATASET / "Test_L1_R2"  # begin-medium
 Test_L1_R3 = DATASET / "Test_L1_R3"  # begin-hard
 Test_All = [Test_L3_R1, Test_L2_R1, Test_L2_R2, Test_L1_R1, Test_L1_R2, Test_L1_R3]
 
-Benchmark_Files = [Test_L3_R1, Test_L2_R1]
+Benchmark_Files = [Test_L3_R1]
 Benchmark_Methods = [negamax]
 Max_Positions = None  # None for all
 Timeout = 10  # seconds per position, None for no limit
@@ -62,36 +62,42 @@ def main(timeout: int | None = Timeout) -> None:
         summary_out_path = RESULTS / f"benchmark_summary_{method.__name__}_{log_time}.txt"
 
         with open(result_out_path, "w") as result_out, open(summary_out_path, "w") as summary_out:
-            result_out.write("method,file,position,expected,score,correct,time_s\n")
+            result_out.write("method,file,position,expected,score,correct,time_s,visited,kpos_s\n")
 
             for file in Benchmark_Files:
                 positions = load(file, Max_Positions)
-                n_correct, n_timeout, total_time = 0, 0, 0.0
+                n_correct, n_timeout, total_time, total_visited = 0, 0, 0.0, 0
                 for seq, expected in positions:
                     pos = Position()
                     pos.sequence_encode(seq)
 
+                    played_before = pos.num_played
                     start = time.perf_counter()
                     score = solve(method, pos, timeout)
                     elapsed = time.perf_counter() - start
+                    visited = pos.num_played - played_before + 1  # +1 for the root position
+                    kpos_s = visited / elapsed / 1e3 if elapsed > 0 else float("nan")
 
                     if score is None:
                         n_timeout += 1
                         result_out.write(
-                            f"{method.__name__},{file.name},{seq},{expected},timeout,False,{elapsed:.9f}\n")
+                            f"{method.__name__},{file.name},{seq},{expected},timeout,False,{elapsed:.9f},{visited},{kpos_s:.1f}\n")
                         continue
 
                     correct = (score == expected)
                     n_correct += correct
                     total_time += elapsed
+                    total_visited += visited
                     result_out.write(
-                        f"{method.__name__},{file.name},{seq},{expected},{score},{correct},{elapsed:.9f}\n")
+                        f"{method.__name__},{file.name},{seq},{expected},{score},{correct},{elapsed:.9f},{visited},{kpos_s:.1f}\n")
 
                 n = len(positions)
                 n_solved = n - n_timeout
                 mean_time = total_time / n_solved if n_solved else float("nan")
+                mean_visited = total_visited / n_solved if n_solved else float("nan")
+                kpos_s = total_visited / total_time / 1e3 if total_time > 0 else float("nan")
                 summary = (f"{method.__name__:10} {file.name}: {n_correct}/{n} correct, "
-                           f"{n_timeout} timeout (>{timeout}s), mean time {mean_time:.9f} (solved only)")
+                           f"{n_timeout} timeout (>{timeout}s), mean time {mean_time:.9f}, mean visited {mean_visited:.1f}, {kpos_s:.1f} K pos/s (solved only)")
                 print(summary)
                 summary_out.write(f"# {summary}\n")
 

@@ -14,6 +14,7 @@ class Position:
         self.cols_height = [0] * self.WIDTH
         self.num_moves = 0
         self.history = []  # (col, row) of each move, in play order
+        self.num_played = 0  # total play() calls, not decreased by undo (for benchmarking)
 
     def is_col_full(self, col: int) -> bool:
         return self.cols_height[col] >= self.HEIGHT
@@ -27,6 +28,7 @@ class Position:
             self.history.append((col, self.cols_height[col]))
             self.cols_height[col] += 1
             self.num_moves += 1
+            self.num_played += 1
         else:
             raise ValueError(f"Invalid move, col {col} is full.")
 
