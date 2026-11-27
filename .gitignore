@@ -1,5 +1,9 @@
 # Python .gitignore - common patterns
 
+#solvers' datasets and results
+solver/dataset
+solver/results
+
 # Byte-compiled / optimized
 __pycache__/
 *.py[cod]
